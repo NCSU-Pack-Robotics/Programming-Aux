@@ -4,19 +4,16 @@
 #include <fcntl.h>
 #include <vector>
 
-#include "common/COBS.hpp"
 #include "common/SerialHandler.hpp"
 
 
-struct test_struct
-{
+struct test_struct {
     int32_t a;
     int32_t b;
     int32_t c;
 };
 
-int main()
-{
+int main() {
     SerialHandler serial_handler(DeviceType::PI);
 
     serial_handler.structs_to_packet_ids.emplace(std::type_index(typeid(test_struct)), PacketId::Hello);
@@ -27,8 +24,7 @@ int main()
 
     std::vector<uint8_t> data;
 
-    while (true)
-    {
+    while (true) {
         serial_handler.receive();
     }
 }
