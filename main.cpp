@@ -4,8 +4,8 @@
 #include <fcntl.h>
 #include <vector>
 
-#include "Programming-Push-Back-Common/COBS.hpp"
-#include "Programming-Push-Back-Common/SerialHandler.hpp"
+#include "common/COBS.hpp"
+#include "common/SerialHandler.hpp"
 
 
 struct test_struct
