@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "common/SerialHandler.hpp"
+#include "common/packet/types/encoder.hpp"
 
 struct test_struct {
     int32_t a;
@@ -15,11 +16,9 @@ struct test_struct {
 int main() {
     SerialHandler serial_handler(DeviceType::PI);
 
-    serial_handler.structs_to_packet_ids.emplace(std::type_index(typeid(test_struct)), PacketId::Hello);
-    serial_handler.handlers.emplace(PacketId::Hello, [](const uint8_t* data) {
-        const auto test = reinterpret_cast<const test_struct*>(data);
-        printf("Received packet with a: %d, b: %d, c: %d\n", test->a, test->b, test->c);
-    });
+    EncoderData encoder_data{3.14159265};
+    Packet packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&encoder_data), sizeof(EncoderData));
+    serial_handler.send(packet);
 
     std::vector<uint8_t> data;
 
