@@ -4,9 +4,7 @@ set(CMAKE_CXX_STANDARD 23)
 
 project(Push_Back_Aux)
 
-if (PI)
-    add_definitions(-DPI)
-endif ()
+add_definitions(-DPI)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBUSB REQUIRED libusb-1.0)

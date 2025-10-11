@@ -13,9 +13,8 @@ int main() {
 
     SerialHandler serial_handler{};
 
-    EncoderData encoder_data{3.14159265};
-    Packet packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&encoder_data), sizeof(EncoderData));
-    // serial_handler.send(packet);
+    EncoderData testData{67.69};
+    serial_handler.send(Packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&testData), sizeof(testData)));
 
     std::vector<uint8_t> data;
 
@@ -23,7 +22,8 @@ int main() {
         serial_handler.receive();
         if (std::optional<Packet> packet = serial_handler.pop_latest(PacketId::ENCODER))
         {
-
+            EncoderData data = packet->get_data<EncoderData>();
+            printf("Data: %f\n", data.value);
         }
     }
 }
