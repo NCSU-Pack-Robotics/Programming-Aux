@@ -15,11 +15,15 @@ int main() {
 
     EncoderData encoder_data{3.14159265};
     Packet packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&encoder_data), sizeof(EncoderData));
-    serial_handler.send(packet);
+    // serial_handler.send(packet);
 
     std::vector<uint8_t> data;
 
     while (true) {
         serial_handler.receive();
+        if (std::optional<Packet> packet = serial_handler.pop_latest(PacketId::ENCODER))
+        {
+
+        }
     }
 }
