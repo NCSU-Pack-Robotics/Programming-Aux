@@ -1,7 +1,3 @@
-#include <cmath>
-#include <cstdint>
-#include <iostream>
-#include <fcntl.h>
 #include <vector>
 
 #include "common/SerialHandler.hpp"
@@ -14,7 +10,8 @@ struct test_struct {
 };
 
 int main() {
-    SerialHandler serial_handler(DeviceType::PI);
+
+    SerialHandler serial_handler{};
 
     EncoderData encoder_data{3.14159265};
     Packet packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&encoder_data), sizeof(EncoderData));
