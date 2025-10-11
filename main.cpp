@@ -13,8 +13,8 @@ int main() {
 
     SerialHandler serial_handler{};
 
-    EncoderData testData{67.69};
-    serial_handler.send(Packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&testData), sizeof(testData)));
+    // EncoderData testData{67.69};
+    // serial_handler.send(Packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&testData), sizeof(testData)));
 
     std::vector<uint8_t> data;
 
