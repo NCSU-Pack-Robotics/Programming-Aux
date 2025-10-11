@@ -14,7 +14,7 @@ pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 add_executable(Push_Back_Aux main.cpp
         common/Buffer.cpp
         common/utils.cpp
-        common/
+        common/packet/Packet.cpp
         common/SerialHandler.cpp)
 
 target_include_directories(Push_Back_Aux PRIVATE ${LIBUSB_INCLUDE_DIRS})
