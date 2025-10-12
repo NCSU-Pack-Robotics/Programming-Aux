@@ -13,7 +13,8 @@ add_executable(Push_Back_Aux main.cpp
         common/Buffer.cpp
         common/utils.cpp
         common/packet/Packet.cpp
-        common/SerialHandler.cpp)
+        common/SerialHandler.cpp
+        common/packet/types/large.hpp)
 
 target_include_directories(Push_Back_Aux PRIVATE ${LIBUSB_INCLUDE_DIRS})
 target_link_libraries(Push_Back_Aux PRIVATE ${LIBUSB_LIBRARIES})
