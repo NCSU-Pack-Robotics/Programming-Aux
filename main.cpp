@@ -10,12 +10,14 @@ struct test_struct {
     int32_t c;
 };
 
+std::float64_t data = 1.0;
+
 int main() {
 
     SerialHandler serial_handler{};
 
-    // EncoderData testData{67.69};
-    // serial_handler.send(Packet(PacketId::ENCODER, reinterpret_cast<uint8_t*>(&testData), sizeof(testData)));
+    EncoderData test_data{data};
+    serial_handler.send(Header{PacketId::ENCODER}, test_data);
 
     std::vector<uint8_t> data;
 
