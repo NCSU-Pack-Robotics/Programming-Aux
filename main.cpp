@@ -1,36 +1,38 @@
 #include <vector>
 
 #include "common/SerialHandler.hpp"
-#include "common/packet/types/encoder.hpp"
-#include "common/packet/types/large.hpp"
+#include <wiringPi.h>
+#include <wiringPiI2C.h>
+#include <thread>
 
-struct test_struct {
-    int32_t a;
-    int32_t b;
-    int32_t c;
-};
+static constexpr uint8_t DEVICE_ADDR = 0x17;
 
-std::float64_t data = 1.0;
+static constexpr uint8_t IMU_CALIBRATION_REG = 0x06;
+static constexpr uint8_t RESET_REG = 0x07;
+static constexpr uint8_t POSITION_REG = 0x20;
+
 
 int main() {
 
     SerialHandler serial_handler{};
 
-    EncoderData test_data{data};
-    serial_handler.send(Header{PacketId::ENCODER}, test_data);
+    serial_handler.add_listener(PacketId::INITIALIZE_OPTICAL, [](SerialHandler& serial_handler, const Packet&) {
+        int fd = wiringPiI2CSetup(DEVICE_ADDR);
+        // TODO: What do we do on error?
+        wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
+        wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
+        do
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
+
+        serial_handler.send(Packet{Header{PacketId::INITIALIZE_OPTICAL_COMPLETE}, nullptr, 0});
+    });
+
 
     std::vector<uint8_t> data;
 
     while (true) {
         serial_handler.receive();
-        if (std::optional<Packet> packet = serial_handler.pop_latest(PacketId::ENCODER)) {
-            // Expected bytes for std::float64_t value of 67.69
-            // 5c 8f c2 f5 28 ec 50 40
-            EncoderData data = packet->get_data<EncoderData>();
-            printf("Data: %f\n", data.value);
-        } else if (std::optional<Packet> packet = serial_handler.pop_latest(PacketId::LARGE)) {
-            LargeData data = packet->get_data<LargeData>();
-            printf("Data: %s\n", data.data);
-        }
     }
 }
