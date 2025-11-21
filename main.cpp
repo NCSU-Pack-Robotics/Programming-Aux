@@ -5,6 +5,8 @@
 #include <wiringPiI2C.h>
 #include <thread>
 
+#include "common/packet/types/InitializeOpticalComplete.hpp"
+
 static constexpr uint8_t DEVICE_ADDR = 0x17;
 
 static constexpr uint8_t IMU_CALIBRATION_REG = 0x06;
@@ -13,6 +15,8 @@ static constexpr uint8_t POSITION_REG = 0x20;
 
 
 int main() {
+
+    using namespace std::chrono_literals;
 
     SerialHandler serial_handler{};
 
@@ -23,10 +27,10 @@ int main() {
         wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
         do
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+            std::this_thread::sleep_for(3ms);
         } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
 
-        serial_handler.send(Packet{Header{PacketId::INITIALIZE_OPTICAL_COMPLETE}, nullptr, 0});
+        serial_handler.send(Packet{{PacketId::INITIALIZE_OPTICAL_COMPLETE}, InitializeOpticalComplete{}});
     });
 
 
