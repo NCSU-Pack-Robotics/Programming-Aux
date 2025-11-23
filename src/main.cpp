@@ -1,13 +1,12 @@
 #include <vector>
 
-#include "common/SerialHandler.hpp"
+#include "SerialHandler.hpp"
+#include "packet/types/Optical.hpp"
+#include "packet/types/InitializeOpticalComplete.hpp"
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 #include <thread>
-#include "common/PacketId.hpp"
 #include <iostream>
-#include "common/packet/types/Optical.hpp"
-#include "common/packet/types/InitializeOpticalComplete.hpp"
 
 static constexpr uint8_t DEVICE_ADDR = 0x17;
 
@@ -20,7 +19,7 @@ void send_position_thread(int fd, SerialHandler& serial_handler)
 	uint8_t rawData[6];
 	while (true)
     	{
-        	unsigned int x = wiringPiI2CReadBlockData(fd, POSITION_REG, rawData, 6);
+        	wiringPiI2CReadBlockData(fd, POSITION_REG, rawData, 6);
 
         	int16_t rawX = (rawData[1] << 8) | rawData[0];
         	int16_t rawY = (rawData[3] << 8) | rawData[2];
@@ -39,7 +38,7 @@ void send_position_thread(int fd, SerialHandler& serial_handler)
 
 		serial_handler.send(Packet{{PacketId::OPTICAL}, OpticalData{rawX * INT16_TO_METER * 1000, rawY * INT16_TO_METER*1000, rawH * INT16_TO_RAD}});
 
-        	std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
 
@@ -52,13 +51,13 @@ int main() {
     serial_handler.add_listener(PacketId::INITIALIZE_OPTICAL, [](SerialHandler& serial_handler, const Packet&) {
 	std::cout << "listener" << std::endl;
 	int fd = wiringPiI2CSetup(DEVICE_ADDR);
-        // TODO: What do we do on error?
-        wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
-        wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
-        do
-        {
-            std::this_thread::sleep_for(3ms);
-        } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
+    // TODO: What do we do on error?
+    wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
+    wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
+    do
+    {
+        std::this_thread::sleep_for(3ms);
+    } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
 	std::cout << "sent" << std::endl;
         serial_handler.send(Packet{{PacketId::INITIALIZE_OPTICAL_COMPLETE}, InitializeOpticalComplete{}});
 	std::thread position_thread{send_position_thread, fd, std::ref(serial_handler)};
@@ -71,8 +70,8 @@ int main() {
     std::vector<uint8_t> data;
 
     while (true) {
-	   
+
         serial_handler.receive();
-	std::cout << "received" << std::endl;
+		std::cout << "received" << std::endl;
     }
 }

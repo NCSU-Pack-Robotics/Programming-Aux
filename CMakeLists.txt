@@ -9,15 +9,11 @@ add_definitions(-DPI)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
 
-set(CMAKE_BUILD_RPATH "/usr/local/lib")
+add_executable(Push_Back_Aux
+        src/main.cpp)
 
-add_executable(Push_Back_Aux main.cpp
-        common/Buffer.cpp
-        common/utils.cpp
-        common/packet/Packet.cpp
-        common/SerialHandler.cpp
-)
-target_include_directories(Push_Back_Aux PRIVATE ${LIBUSB_INCLUDE_DIRS})
-target_link_directories(Push_Back_Aux PRIVATE /usr/local/lib)
-target_link_libraries(Push_Back_Aux PRIVATE /usr/local/lib/libusb-1.0.so)
+add_subdirectory(dependencies/common)
+
+target_link_libraries(Push_Back_Aux PRIVATE Programming_Push_Back_Common_lib)
+
 target_link_libraries(Push_Back_Aux PRIVATE wiringPi)
