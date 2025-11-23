@@ -1,3 +1,0 @@
-/home/WLFPK1/temp/Programming-Push-Back-Aux/build/CMakeFiles/Push_Back_Aux.dir
-/home/WLFPK1/temp/Programming-Push-Back-Aux/build/CMakeFiles/edit_cache.dir
-/home/WLFPK1/temp/Programming-Push-Back-Aux/build/CMakeFiles/rebuild_cache.dir
