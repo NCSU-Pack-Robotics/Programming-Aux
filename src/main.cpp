@@ -1,8 +1,8 @@
 #include <vector>
 
 #include "SerialHandler.hpp"
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
+// #include <wiringPi.h>
+// #include <wiringPiI2C.h>
 #include <thread>
 #include <iostream>
 
@@ -37,7 +37,7 @@ void send_position_thread(int fd, SerialHandler& serial_handler)
 	            rawY * INT16_TO_METER,
 	            rawH * INT16_TO_RAD);
 
-		serial_handler.send(OpticalPacket{OpticalPacket::Data{rawX * INT16_TO_METER * 1000, rawY * INT16_TO_METER*1000, rawH * INT16_TO_RAD}});
+		serial_handler.send(OpticalPacket{rawX * INT16_TO_METER * 1000, rawY * INT16_TO_METER*1000, rawH * INT16_TO_RAD});
 
 	    std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
@@ -49,16 +49,17 @@ int main() {
 
     SerialHandler serial_handler{};
 
-	serial_handler.add_listener<InitializeOpticalPacket>([](SerialHandler& serial_handler, const Packet&) {
+	serial_handler.add_listener<InitializeOpticalPacket>([](SerialHandler& serial_handler, const Packet& packet) {
 		std::cout << "listener" << std::endl;
-		int fd = wiringPiI2CSetup(DEVICE_ADDR);
-		// TODO: What do we do on error?
-		wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
-		wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
-		do
-		{
-		    std::this_thread::sleep_for(3ms);
-		} while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
+		int fd = 5;
+		// int fd = wiringPiI2CSetup(DEVICE_ADDR);
+		// // TODO: What do we do on error?
+		// wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
+		// wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
+		// do
+		// {
+		//     std::this_thread::sleep_for(3ms);
+		// } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
 		std::cout << "sent" << std::endl;
 		serial_handler.send(InitializeOpticalPacket{});
 		std::thread position_thread{send_position_thread, fd, std::ref(serial_handler)};
