@@ -1,3 +1,0 @@
-[submodule "dependencies/common"]
-	path = dependencies/common
-	url = https://github.ncsu.edu/Wolf-Pack-Robotics/Programming-Push-Back-Common.git
