@@ -1,0 +1,1 @@
+/usr/bin/c++ -Wl,--dependency-file=CMakeFiles/Push_Back_Aux.dir/link.d CMakeFiles/Push_Back_Aux.dir/src/main.cpp.o -o Push_Back_Aux  dependencies/common/libProgramming_Push_Back_Common_lib.a -lwiringPi -lusb-1.0
