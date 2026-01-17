@@ -1,2 +1,0 @@
-/usr/bin/ar qc libProgramming_Push_Back_Common_lib.a CMakeFiles/Programming_Push_Back_Common_lib.dir/src/Buffer.cpp.o CMakeFiles/Programming_Push_Back_Common_lib.dir/src/Packet.cpp.o CMakeFiles/Programming_Push_Back_Common_lib.dir/src/SerialHandler.cpp.o CMakeFiles/Programming_Push_Back_Common_lib.dir/src/Utils.cpp.o
-/usr/bin/ranlib libProgramming_Push_Back_Common_lib.a

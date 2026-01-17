@@ -1,4 +1,4 @@
 [submodule "dependencies/common"]
 	path = dependencies/common
-	url = git@github.com:ncstate-student-orgs/Pack-Robotics-Programming-Push-Back-Common.git
+	url = git@github.com:NCSU-Pack-Robotics/Programming-Push-Back-Common.git
 	branch = pi_usb_transfer
