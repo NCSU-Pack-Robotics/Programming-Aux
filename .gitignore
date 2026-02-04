@@ -3,6 +3,9 @@
 cmake-build-do
 cmake-build-think
 
+# Build directory
+build/
+
 # Compiled Object files
 *.slo
 *.lo
