@@ -4,10 +4,8 @@ set(CMAKE_CXX_STANDARD 23)
 
 project(Push_Back_Aux)
 
-add_definitions(-DPI)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
+option(PI "Code will run on a Raspberry Pi" ON)
 
 add_executable(Push_Back_Aux
         src/main.cpp)
