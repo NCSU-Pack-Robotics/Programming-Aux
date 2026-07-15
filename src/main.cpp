@@ -1,8 +1,8 @@
 #include <vector>
 
 #include "SerialHandler.hpp"
-#include <wiringPi.h>
-#include <wiringPiI2C.h>
+// #include <wiringPi.h>
+// #include <wiringPiI2C.h>
 #include <thread>
 #include <iostream>
 
@@ -25,7 +25,7 @@ void send_position_thread(int fd, SerialHandler& serial_handler) {
 	while (true)
     {
 		// Read data from the position register
-        wiringPiI2CReadBlockData(fd, POSITION_REG, rawData, sizeof(rawData));
+        // wiringPiI2CReadBlockData(fd, POSITION_REG, rawData, sizeof(rawData));
 
 		// taking numbers byte by byte and put into bigger value
         int16_t rawX = (rawData[1] << 8) | rawData[0];
@@ -55,20 +55,21 @@ int main() {
     using namespace std::chrono_literals;
 
 	std::vector<std::thread> threads;
+
     SerialHandler serial_handler{};
 
 	serial_handler.add_listener<InitializeOpticalPacket>([&threads](SerialHandler& serial_handler, const Packet& packet) {
 		// Get the file descriptor from the optical sensor bus
-		int fd = wiringPiI2CSetup(DEVICE_ADDR);
+		// int fd = wiringPiI2CSetup(DEVICE_ADDR);
 		// TODO: What do we do on error?
-		wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
-		wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
-		do
-		{
-			std::this_thread::sleep_for(3ms);
-		} while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
+		// wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
+		// wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
+		// do
+		// {
+			// std::this_thread::sleep_for(3ms);
+		// } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
 		serial_handler.send(InitializeOpticalPacket{});
-		threads.emplace_back(send_position_thread, fd, std::ref(serial_handler));
+		// threads.emplace_back(send_position_thread, fd, std::ref(serial_handler));
 	});
 
 
