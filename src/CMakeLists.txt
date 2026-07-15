@@ -1,5 +1,7 @@
 add_executable(Push_Back_Aux_exe
         main.cpp
+        comm_protocols/I2C.hpp
+        comm_protocols/I2C.cpp
 )
 
 target_include_directories(Push_Back_Aux_exe PUBLIC

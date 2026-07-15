@@ -3,9 +3,13 @@
 #include "SerialHandler.hpp"
 // #include <wiringPi.h>
 // #include <wiringPiI2C.h>
-#include <thread>
+#include <hardware/gpio.h>
+#include <hardware/uart.h>
 #include <iostream>
+#include <pico/time.h>
+#include <thread>
 
+#include "Comms/PiPicoComm.hpp"
 #include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
 
@@ -50,40 +54,91 @@ void send_position_thread(int fd, SerialHandler& serial_handler) {
 	}
 }
 
+
+// Pico W devices use a GPIO on the WIFI chip for the LED,
+// so when building for Pico W, CYW43_WL_GPIO_LED_PIN will be defined
+#ifdef CYW43_WL_GPIO_LED_PIN
+#include "pico/cyw43_arch.h"
+#endif
+
+#ifndef LED_DELAY_MS
+#define LED_DELAY_MS 250
+#endif
+
+// Perform initialisation
+int pico_led_init(void) {
+#if defined(PICO_DEFAULT_LED_PIN)
+    // A device like Pico that uses a GPIO for the LED will define PICO_DEFAULT_LED_PIN
+    // so we can use normal GPIO functionality to turn the led on and off
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+    return PICO_OK;
+#elif defined(CYW43_WL_GPIO_LED_PIN)
+    // For Pico W devices we need to initialise the driver etc
+    return cyw43_arch_init();
+#endif
+}
+
+// Turn the led on or off
+void pico_set_led(bool led_on) {
+#if defined(PICO_DEFAULT_LED_PIN)
+    // Just set the GPIO on or off
+    gpio_put(PICO_DEFAULT_LED_PIN, led_on);
+#elif defined(CYW43_WL_GPIO_LED_PIN)
+    // Ask the wifi "driver" to set the GPIO on or off
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_on);
+#endif
+}
+
 int main() {
+    int rc = pico_led_init();
 
-    using namespace std::chrono_literals;
+    gpio_set_function(4, UART_FUNCSEL_NUM(uart1, 4));
+    gpio_set_function(5, UART_FUNCSEL_NUM(uart1, 5));
 
-	std::vector<std::thread> threads;
-
-    SerialHandler serial_handler{};
-
-	serial_handler.add_listener<InitializeOpticalPacket>([&threads](SerialHandler& serial_handler, const Packet& packet) {
-		// Get the file descriptor from the optical sensor bus
-		// int fd = wiringPiI2CSetup(DEVICE_ADDR);
-		// TODO: What do we do on error?
-		// wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
-		// wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
-		// do
-		// {
-			// std::this_thread::sleep_for(3ms);
-		// } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
-		serial_handler.send(InitializeOpticalPacket{});
-		// threads.emplace_back(send_position_thread, fd, std::ref(serial_handler));
-	});
-
-
-
-
-    std::vector<uint8_t> data;
+    // Initialise UART 1
+    uart_init(uart1, 115200);
 
     while (true) {
-        serial_handler.receive();
+        uart_puts(uart1, "q");
+        sleep_ms(500);
+        pico_set_led(true);
+        sleep_ms(500);
+        pico_set_led(false);
     }
 
-	for (auto& thread : threads) {
-		if (thread.joinable()) {
-			thread.join();
-		}
-	}
+ //    using namespace std::chrono_literals;
+ //
+	// std::vector<std::thread> threads;
+ //
+ //    SerialHandler serial_handler{std::make_unique<PiPicoComm>()};
+ //
+	// serial_handler.add_listener<InitializeOpticalPacket>([&threads](SerialHandler& serial_handler, const Packet& packet) {
+	// 	// Get the file descriptor from the optical sensor bus
+	// 	// int fd = wiringPiI2CSetup(DEVICE_ADDR);
+	// 	// TODO: What do we do on error?
+	// 	// wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
+	// 	// wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
+	// 	// do
+	// 	// {
+	// 		// std::this_thread::sleep_for(3ms);
+	// 	// } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
+	// 	serial_handler.send(InitializeOpticalPacket{});
+	// 	// threads.emplace_back(send_position_thread, fd, std::ref(serial_handler));
+	// });
+ //
+ //
+ //
+ //
+ //    std::vector<uint8_t> data;
+ //
+ //    while (true) {
+ //        serial_handler.receive();
+ //    }
+ //
+	// for (auto& thread : threads) {
+	// 	if (thread.joinable()) {
+	// 		thread.join();
+	// 	}
+	// }
 }

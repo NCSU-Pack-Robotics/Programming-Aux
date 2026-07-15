@@ -30,6 +30,7 @@ add_subdirectory(dependencies/common)
 
 target_include_directories(Push_Back_Aux_exe PUBLIC
         dependencies/common
+        src
 )
 
 option(PI "Code will run on a Raspberry Pi" ON)
