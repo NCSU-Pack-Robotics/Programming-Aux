@@ -2,10 +2,8 @@ add_executable(Push_Back_Aux_exe
         main.cpp
         comm_protocols/I2C.hpp
         comm_protocols/I2C.cpp
-)
-
-target_include_directories(Push_Back_Aux_exe PUBLIC
-        ../dependencies/common
+        comms/PiPicoComm.hpp
+        comms/PiPicoComm.cpp
 )
 
 pico_enable_stdio_usb(Push_Back_Aux_exe 1)

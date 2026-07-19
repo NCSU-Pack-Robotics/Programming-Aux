@@ -3,6 +3,8 @@
 cmake-build-do
 cmake-build-think
 
+build_artifacts/
+
 # Build directory
 build/
 
