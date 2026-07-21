@@ -3,10 +3,14 @@
 #include "SerialHandler.hpp"
 // #include <wiringPi.h>
 // #include <wiringPiI2C.h>
+#include <hardware/gpio.h>
 #include <iostream>
 #include <thread>
 
+#include "pico/stdlib.h"
+
 #include "comms/PiPicoComm.hpp"
+#include "devices/PAA5160E1.hpp"
 #include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
 
@@ -51,37 +55,56 @@ void send_position_thread(int fd, SerialHandler& serial_handler) {
 	}
 }
 
+static void hello_world() {
+    std::cout << "Program Started" << std::endl;
+
+    gpio_init(25);
+    gpio_set_dir(25, GPIO_OUT);
+    gpio_put(25, true);
+}
+
 int main() {
-    using namespace std::chrono_literals;
+    // using namespace std::chrono_literals;
 
-	std::vector<std::thread> threads;
+    stdio_init_all();
 
-    SerialHandler serial_handler{std::make_unique<PiPicoComm>()};
+	// std::vector<std::thread> threads;
+ //
+ //    SerialHandler serial_handler{std::make_unique<PiPicoComm>()};
+ //
+	// serial_handler.add_listener<InitializeOpticalPacket>([&threads, &serial_handler](const Packet& packet) {
+	// 	// Get the file descriptor from the optical sensor bus
+	// 	// int fd = wiringPiI2CSetup(DEVICE_ADDR);
+	// 	// TODO: What do we do on error?
+	// 	// wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
+	// 	// wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
+	// 	// do
+	// 	// {
+	// 		// std::this_thread::sleep_for(3ms);
+	// 	// } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
+	// 	serial_handler.send(InitializeOpticalPacket{});
+	// 	// threads.emplace_back(send_position_thread, fd, std::ref(serial_handler));
+	// });
 
-	serial_handler.add_listener<InitializeOpticalPacket>([&threads, &serial_handler](const Packet& packet) {
-		// Get the file descriptor from the optical sensor bus
-		// int fd = wiringPiI2CSetup(DEVICE_ADDR);
-		// TODO: What do we do on error?
-		// wiringPiI2CWriteReg8(fd, RESET_REG, true); // Reset tracking
-		// wiringPiI2CWriteReg8(fd, IMU_CALIBRATION_REG, 255); // Number of samples for calibration. Each one takes 3ms so fewer can speed up total calibration time.
-		// do
-		// {
-			// std::this_thread::sleep_for(3ms);
-		// } while (wiringPiI2CReadReg8(fd, IMU_CALIBRATION_REG) != 0);
-		serial_handler.send(InitializeOpticalPacket{});
-		// threads.emplace_back(send_position_thread, fd, std::ref(serial_handler));
-	});
+    hello_world();
 
+    const I2C i2c_instance(0x17, 9600, &i2c0_inst, {0, 1});
+    PAA5160E1 odom_sensor(i2c_instance);
 
-    std::vector<uint8_t> data;
+    bool success = true;
+    success &= odom_sensor.calibrate();
+    success &= odom_sensor.reset();
 
     while (true) {
-        serial_handler.receive();
+        // serial_handler.receive();
+        const auto measurement = odom_sensor.get_position();
+        printf("X: %.2f | Y: %.2f | H: %.2f\n", measurement.x, measurement.y, measurement.h * (180.0 / M_PI));
+        sleep_ms(10);
     }
 
-	for (auto& thread : threads) {
-		if (thread.joinable()) {
-			thread.join();
-		}
-	}
+	// for (auto& thread : threads) {
+	// 	if (thread.joinable()) {
+	// 		thread.join();
+	// 	}
+	// }
 }

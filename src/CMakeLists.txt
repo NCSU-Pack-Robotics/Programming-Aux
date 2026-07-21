@@ -1,19 +1,24 @@
 add_executable(Push_Back_Aux_exe
         main.cpp
-        comm_protocols/I2C.hpp
-        comm_protocols/I2C.cpp
+        comms/I2C.hpp
+        comms/I2C.cpp
         comms/PiPicoComm.hpp
         comms/PiPicoComm.cpp
+        devices/PAA5160E1.hpp
+        devices/PAA5160E1.hpp
+        devices/PAA5160E1.cpp
+        devices/PAA5160E1.cpp
+        config.hpp
 )
 
-pico_enable_stdio_usb(Push_Back_Aux_exe 1)
-pico_enable_stdio_uart(Push_Back_Aux_exe 0)
-
-target_link_libraries(Push_Back_Aux_exe PRIVATE
+target_link_libraries(Push_Back_Aux_exe
         pico_stdlib
         hardware_i2c
         Programming_Push_Back_Common_lib
 )
+
+pico_enable_stdio_usb(Push_Back_Aux_exe 1)
+pico_enable_stdio_uart(Push_Back_Aux_exe 0)
 
 target_compile_options(Push_Back_Aux_exe PRIVATE
         -Wno-psabi

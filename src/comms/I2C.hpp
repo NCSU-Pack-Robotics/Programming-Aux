@@ -34,10 +34,10 @@ public:
     /**
      * Reads bytes from a register on the device.
      * @param reg The register to read from.
-     * @param num_bytes The number of bytes to read.
+     * @param num_bytes The number of bytes to read. Defaults to 1.
      * @return The bytes read from the device.
      */
-    std::vector<uint8_t> read_reg(uint8_t reg, size_t num_bytes) const;
+    [[nodiscard]] std::vector<uint8_t> read_reg(uint8_t reg, size_t num_bytes=1) const;
 
     ~I2C();
 
