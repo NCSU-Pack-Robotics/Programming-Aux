@@ -29,16 +29,64 @@ public:
     bool calibrate(uint8_t numSamples = 255, bool waitUntilDone = true) const;
 
     /**
+     * Performs a self test.
+     * @return true if pass, false if fail.
+     */
+    [[nodiscard]] bool self_test() const;
+
+    /**
      * Resets positions to origin and resets internal kalman filters.
      * @return true for success, false for failure.
      */
     bool reset() const;
 
     /**
-     * Gets the position from the sensor.
-     * @return The position data. The data will be 0s (false) if an error occurred.
+     * Sets the linear scalar. Can be used to compensate for scaling issues with the sensor measurements
+     * @param scalar Linear scalar, must be between 0.872 and 1.127
+     * @return true for success, false for failure.
      */
+    bool set_linear_scalar(float scalar) const;
+
+    /**
+     * Sets the angular scalar. Can be used to compensate for scaling issues with the sensor measurements
+     * @param scalar Angular scalar, must be between 0.872 and 1.127
+     * @return true for success, false for failure.
+     */
+    bool set_angular_vector(float scalar) const;
+
+    /** @return The position data. The data will be 0s (false) if an error occurred. */
     [[nodiscard]] SensorData get_position() const;
+
+    /** @return The velocity data. The data will be 0s (false) if an error occurred. */
+    [[nodiscard]] SensorData get_velocity() const;
+
+    /** @return The acceleration data. The data will be 0s (false) if an error occurred. */
+    [[nodiscard]] SensorData get_acceleration() const;
+
+    /**
+     * @return The standard deviations of the velocity. The data will be 0s (false) if an error occurred
+     * @note These values are just the square root of the diagonal elements of
+     * the covariance matrices of the Kalman filters used in the firmware, so
+     * they are just statistical quantities and do not represent actual error!
+     */
+    [[nodiscard]] SensorData get_position_std_devs() const;
+
+    /**
+     * @return The standard deviations of the position. The data will be 0s (false) if an error occurred
+     * @note These values are just the square root of the diagonal elements of
+     * the covariance matrices of the Kalman filters used in the firmware, so
+     * they are just statistical quantities and do not represent actual error!
+     */
+    [[nodiscard]] SensorData get_velocity_std_devs() const;
+
+    /**
+     * @return The standard deviations of the acceleration. The data will be 0s (false) if an error occurred
+     * @note These values are just the square root of the diagonal elements of
+     * the covariance matrices of the Kalman filters used in the firmware, so
+     * they are just statistical quantities and do not represent actual error!
+     */
+    [[nodiscard]] SensorData get_acceleration_std_devs() const;
+
 
 protected:
     static constexpr uint8_t ProductId = 0x00;

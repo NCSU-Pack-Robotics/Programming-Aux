@@ -91,9 +91,22 @@ int main() {
     const I2C i2c_instance(0x17, 9600, &i2c0_inst, {0, 1});
     PAA5160E1 odom_sensor(i2c_instance);
 
+    sleep_ms(100);
+
     bool success = true;
     success &= odom_sensor.calibrate();
+    success &= odom_sensor.self_test();
     success &= odom_sensor.reset();
+
+    while (!success) {
+        printf("Failed to initialize the odometry sensor\n");
+        sleep_ms(100);
+
+        success = true;
+        success &= odom_sensor.calibrate();
+        success &= odom_sensor.self_test();
+        success &= odom_sensor.reset();
+    }
 
     while (true) {
         // serial_handler.receive();

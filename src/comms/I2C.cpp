@@ -38,7 +38,7 @@ int I2C::write_reg(const uint8_t reg, const std::vector<uint8_t>& data) const {
             static_cast<unsigned int>(reg));
     }
 
-    return num_written;
+    return num_written - 1;  // Subtracting to account for the address byte
 }
 
 std::vector<uint8_t> I2C::read_reg(const uint8_t reg, const size_t num_bytes) const {
