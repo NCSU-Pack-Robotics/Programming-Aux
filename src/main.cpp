@@ -1,8 +1,6 @@
 #include <vector>
 
 #include "SerialHandler.hpp"
-// #include <wiringPi.h>
-// #include <wiringPiI2C.h>
 #include <hardware/gpio.h>
 #include <iostream>
 #include <thread>

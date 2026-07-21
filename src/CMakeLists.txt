@@ -11,8 +11,9 @@ add_executable(Push_Back_Aux_exe
         config.hpp
 )
 
-target_link_libraries(Push_Back_Aux_exe
+target_link_libraries(Push_Back_Aux_exe PRIVATE
         pico_stdlib
+        pico_bootsel_via_double_reset
         hardware_i2c
         Programming_Push_Back_Common_lib
 )
