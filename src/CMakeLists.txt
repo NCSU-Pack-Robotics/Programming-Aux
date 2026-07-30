@@ -9,6 +9,8 @@ add_executable(Push_Back_Aux_exe
         devices/PAA5160E1.cpp
         devices/PAA5160E1.cpp
         config.hpp
+        comms/Uart.cpp
+        comms/Uart.hpp
 )
 
 target_link_libraries(Push_Back_Aux_exe PRIVATE
