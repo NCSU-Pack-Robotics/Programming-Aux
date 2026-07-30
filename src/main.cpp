@@ -8,6 +8,7 @@
 #include "pico/stdlib.h"
 
 #include "comms/PiPicoComm.hpp"
+#include "comms/Uart.hpp"
 #include "devices/PAA5160E1.hpp"
 #include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
@@ -106,11 +107,21 @@ int main() {
         success &= odom_sensor.reset();
     }
 
+    const Uart uart{115200, uart1, {4, 5}};
+
     while (true) {
         // serial_handler.receive();
         const auto measurement = odom_sensor.get_position();
         printf("X: %.2f | Y: %.2f | H: %.2f\n", measurement.x, measurement.y, measurement.h * (180.0 / M_PI));
-        sleep_ms(10);
+
+        constexpr uint8_t data[] = "Sent from Pico2";
+        uart.send_bytes(data, sizeof(data));
+
+        uint8_t buff[sizeof(data)] = {};
+        uart.read_bytes(buff, sizeof(buff));
+        printf("Received: %s\n", buff);
+
+        sleep_ms(1000);
     }
 
 	// for (auto& thread : threads) {
