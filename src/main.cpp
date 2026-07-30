@@ -1,24 +1,14 @@
-#include <vector>
-
-#include "SerialHandler.hpp"
 #include <hardware/gpio.h>
 #include <iostream>
 #include <thread>
 
+#include "config.hpp"
 #include "pico/stdlib.h"
 
-#include "comms/PiPicoComm.hpp"
 #include "comms/Uart.hpp"
 #include "devices/PAA5160E1.hpp"
-#include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
-
-/** Optical Sensor address on I2C bus */
-constexpr uint8_t DEVICE_ADDR = 0x17;
-
-constexpr uint8_t IMU_CALIBRATION_REG = 0x06;
-constexpr uint8_t RESET_REG = 0x07;
-constexpr uint8_t POSITION_REG = 0x20;
+#include "SerialHandler.hpp"
 
 /** function that gets ran on another thread for the optical sensor. It's only job is to send position data.
  * @param fd The file descriptor of the optical sensor I2C bus
@@ -57,9 +47,9 @@ void send_position_thread(int fd, SerialHandler& serial_handler) {
 static void hello_world() {
     std::cout << "Program Started" << std::endl;
 
-    gpio_init(25);
-    gpio_set_dir(25, GPIO_OUT);
-    gpio_put(25, true);
+    gpio_init(Config::Pins::STATUS_LED_GPIO);
+    gpio_set_dir(Config::Pins::STATUS_LED_GPIO, GPIO_OUT);
+    gpio_put(Config::Pins::STATUS_LED_GPIO, true);
 }
 
 int main() {
@@ -87,7 +77,9 @@ int main() {
 
     hello_world();
 
-    const I2C i2c_instance(0x17, 9600, &i2c0_inst, {0, 1});
+    const I2C i2c_instance(Config::OPTICAL_SENSOR::ADDR, Config::OPTICAL_SENSOR::BAUD_RATE,
+                           Config::OPTICAL_SENSOR::I2C_ID,
+                           {Config::Pins::OPTICAL_SDA_GPIO, Config::Pins::OPTICAL_SCL_GPIO});
     PAA5160E1 odom_sensor(i2c_instance);
 
     sleep_ms(100);
@@ -107,7 +99,9 @@ int main() {
         success &= odom_sensor.reset();
     }
 
-    const Uart uart{115200, uart1, {4, 5}};
+    const Uart uart{Config::BRAIN_COMM::BAUD_RATE,
+                    Config::BRAIN_COMM::UART_ID,
+                    {Config::Pins::UART_TX_GPIO, Config::Pins::UART_RX_GPIO}};
 
     while (true) {
         // serial_handler.receive();
