@@ -19,8 +19,9 @@ class PiPicoComm : public AbstractComm {
                     {Config::Pins::UART_TX_GPIO, Config::Pins::UART_RX_GPIO}};
 
 public:
-    PiPicoComm() = default;
+    PiPicoComm();
     ~PiPicoComm() override;
+
     size_t read(unsigned char* buf, size_t count) override;
     void write(unsigned char* buf, size_t count) override;
 

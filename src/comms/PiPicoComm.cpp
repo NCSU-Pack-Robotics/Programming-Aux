@@ -1,5 +1,9 @@
 #include "PiPicoComm.hpp"
 
+PiPicoComm::PiPicoComm() {
+    mutex_init(&mutex);
+}
+
 PiPicoComm::~PiPicoComm() {
     mutex_exit(&mutex);
 }
