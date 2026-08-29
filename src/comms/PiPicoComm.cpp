@@ -9,10 +9,7 @@ PiPicoComm::~PiPicoComm() {
 }
 
 size_t PiPicoComm::read(unsigned char* buf, const size_t count) {
-    if (count == 0) return 0;
-
-    const bool read_success = uart.read_bytes(buf, count);
-    return read_success ? count : 0;
+    return uart.read_bytes(buf, count);
 }
 
 void PiPicoComm::write(unsigned char* buf, const size_t count) {

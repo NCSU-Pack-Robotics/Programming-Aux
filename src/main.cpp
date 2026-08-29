@@ -30,7 +30,12 @@ static PAA5160E1 odom_sensor(i2c_instance);
 static void receive_core() {
     while (true) {
         serial_handler.receive();
-        sleep_ms(100);
+        printf("Received packet!\n");
+        auto packet = serial_handler.pop_latest<OpticalPacket>();
+        if (packet.has_value()) {
+            printf("counter at %lf\n", packet->get_data<OpticalPacket>().x);
+        }
+        // sleep_ms(100);
     }
 }
 

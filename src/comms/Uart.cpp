@@ -7,7 +7,7 @@
 
 Uart::Uart(const uint baud_rate,
         uart_inst_t *uart_id,
-        const std::pair<uint8_t, uint8_t> &pins)
+        std::pair<uint8_t, uint8_t> pins)
     : baud_rate(baud_rate), uart_id(uart_id), pins(pins) {
 
     gpio_set_function(pins.first, UART_FUNCSEL_NUM(uart_id, pins.first));
@@ -32,13 +32,13 @@ void Uart::send_bytes(const uint8_t *bytes, const size_t length) const {
     uart_tx_wait_blocking(uart_id);
 }
 
-bool Uart::read_bytes(uint8_t *buffer, const size_t length, const uint32_t timeout_us) const {
-    if (uart_is_readable_within_us(uart_id, timeout_us)) {
-        uart_read_blocking(uart_id, buffer, length);
-        return true;
+size_t Uart::read_bytes(uint8_t* buffer, const size_t length) const {
+    size_t amt_read{};
+    while (uart_is_readable(uart_id) && amt_read < length) {
+        buffer[amt_read++] = uart_getc(uart_id);
     }
 
-    return false;
+    return amt_read;
 }
 
 Uart::~Uart() {

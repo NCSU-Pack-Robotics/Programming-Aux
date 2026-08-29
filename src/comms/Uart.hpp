@@ -17,7 +17,7 @@ public:
      */
     Uart(unsigned int baud_rate,
             uart_inst_t *uart_id,
-            const std::pair<uint8_t, uint8_t> &pins);
+            std::pair<uint8_t, uint8_t> pins);
 
     /**
      * Sends a single byte over the UART connection.
@@ -36,13 +36,11 @@ public:
 
     /**
      * Reads bytes from the UART connection into a buffer. This is a blocking call.
-     * @remark The call will block for some microseconds waiting for bytes.
      * @param buffer Pointer to the buffer to read bytes into. Must be at least `length` bytes long.
-     * @param length The number of bytes to read.
-     * @param timeout_us The number of microseconds to wait for byte to available before returning.
-     * @return true if bytes were read, false if the timeout was reached before any bytes were read.
+     * @param length The maximum amount of bytes to read.
+     * @return The number of bytes read.
      */
-    bool read_bytes(uint8_t *buffer, size_t length, uint32_t timeout_us=1e3) const;
+    size_t read_bytes(uint8_t *buffer, size_t length) const;
 
     ~Uart();
 
