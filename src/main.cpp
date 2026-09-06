@@ -56,7 +56,7 @@ int main() {
         success = true;
         success &= odom_sensor.calibrate();
         success &= odom_sensor.self_test();
-        success &= odom_sensor.reset();3
+        success &= odom_sensor.reset();
     }
 
     sleep_ms(100);
