@@ -29,11 +29,11 @@ static PAA5160E1 odom_sensor(i2c_instance);
 
 static void receive_core() {
     while (true) {
-        serial_handler.receive();
-        printf("Received packet!\n");
-        auto packet = serial_handler.pop_latest<OpticalPacket>();
-        if (packet.has_value()) {
-            printf("counter at %lf\n", packet->get_data<OpticalPacket>().x);
+        const auto& packet = serial_handler.receive_packet();
+        if (packet.has_value() && packet->get_id() == OpticalPacket::id) {
+            auto tp = std::chrono::system_clock::now();
+            printf("received optical packet x: %lf y: %lf heading: %lf\n", packet->get_data<OpticalPacket>().x,
+                packet->get_data<OpticalPacket>().y, packet->get_data<OpticalPacket>().heading);
         }
         // sleep_ms(100);
     }
@@ -56,7 +56,7 @@ int main() {
         success = true;
         success &= odom_sensor.calibrate();
         success &= odom_sensor.self_test();
-        success &= odom_sensor.reset();
+        success &= odom_sensor.reset();3
     }
 
     sleep_ms(100);
