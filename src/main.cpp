@@ -10,7 +10,6 @@
 #include "SerialHandler.hpp"
 #include "comms/PiPicoComm.hpp"
 #include "devices/PAA5160E1.hpp"
-#include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
 
 static void hello_world() {
@@ -27,15 +26,16 @@ const I2C i2c_instance(Config::OPTICAL_SENSOR::ADDR, Config::OPTICAL_SENSOR::BAU
                            {Config::Pins::OPTICAL_SDA_GPIO, Config::Pins::OPTICAL_SCL_GPIO});
 static PAA5160E1 odom_sensor(i2c_instance);
 
+PAA5160E1::SensorData measurement{};
+
 static void receive_core() {
     while (true) {
-        serial_handler.receive();
-        printf("Received packet!\n");
-        auto packet = serial_handler.pop_latest<OpticalPacket>();
-        if (packet.has_value()) {
-            printf("counter at %lf\n", packet->get_data<OpticalPacket>().x);
+        const auto& packet = serial_handler.receive_packet();
+        if (packet.has_value() && packet->is_request() && packet->get_id() == OpticalPacket::id) {
+
+            printf("Responding with X: %.2f | Y: %.2f | H: %.2f\n", measurement.x, measurement.y, measurement.h);
+            serial_handler.send(OpticalPacket{measurement.x, measurement.y, measurement.h});
         }
-        // sleep_ms(100);
     }
 }
 
@@ -64,12 +64,8 @@ int main() {
     multicore_launch_core1(receive_core);
 
     while (true) {
-        const auto measurement = odom_sensor.get_position();
-        printf("X: %.2f | Y: %.2f | H: %.2f\n", measurement.x, measurement.y, measurement.h * (180.0 / M_PI));
 
-        OpticalPacket packet{measurement.x, measurement.y, measurement.h};
-        serial_handler.send(packet);
-
-        sleep_ms(100);
+        measurement = odom_sensor.get_position();
+        sleep_ms(10);
     }
 }
