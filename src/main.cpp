@@ -35,7 +35,7 @@ static PAA5160E1 odom_sensor(i2c_instance);
 PAA5160E1::SensorData measurement{};
 
 /**
- * Functions based on incoming packet id.
+ * Functions based on incoming packet id. Modify when needed.
  */
 void IntitializeAuxFunction(){
 
