@@ -11,6 +11,8 @@ add_executable(Push_Back_Aux_exe
         config.hpp
         comms/Uart.cpp
         comms/Uart.hpp
+        packetFunctions.cpp
+        packetFunctions.hpp
 )
 
 target_link_libraries(Push_Back_Aux_exe PRIVATE
