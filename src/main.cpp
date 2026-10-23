@@ -67,7 +67,7 @@ std::unordered_map<uint8_t, std::function<void()>> IDPairs = {
 static void receive_core() {
     while (true) {
         const auto& packet = serial_handler.receive_packet();
-        if (packet.has_value() && packet->is_request()) {
+        if (packet->has_value() && packet->is_request()) {
             auto packet_function = IDPairs.find(packet->get_id());
             if (packet_function != IDPairs.end()){
                 packet_function->second();
