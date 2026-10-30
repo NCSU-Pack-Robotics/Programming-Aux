@@ -18,7 +18,7 @@
 #include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
 #include "packets/TextPacket.hpp"
-#include "packetFunctions.hpp"
+#include "PacketFunctions.hpp"
 
 static void hello_world() {
     std::cout << "Program Started" << std::endl;
@@ -34,12 +34,12 @@ const I2C i2c_instance(Config::OPTICAL_SENSOR::ADDR, Config::OPTICAL_SENSOR::BAU
                            {Config::Pins::OPTICAL_SDA_GPIO, Config::Pins::OPTICAL_SCL_GPIO});
 static PAA5160E1 odom_sensor(i2c_instance);
 
-std::unordered_map<uint8_t, std::function<void(SerialHandler*)>> IDPairs = {
-    {PacketIds::INITIALIZE_AUX, packetFunctions::IntitializeAux}, 
-    {PacketIds::OPTICAL, packetFunctions::Optical}, 
-    {PacketIds::INITIALIZE_OPTICAL, packetFunctions::InitializeOptical}, 
-    {PacketIds::INITIALIZE_OPTICAL_COMPLETE, packetFunctions::InitializeOpticalComplete}, 
-    {PacketIds::TEXT, packetFunctions::TextPacket}};
+std::unordered_map<uint8_t, std::function<void(SerialHandler&)>> IDPairs = {
+    {PacketIds::INITIALIZE_AUX, PacketFunctions::IntitializeAux}, 
+    {PacketIds::OPTICAL, PacketFunctions::Optical}, 
+    {PacketIds::INITIALIZE_OPTICAL, PacketFunctions::InitializeOptical}, 
+    {PacketIds::INITIALIZE_OPTICAL_COMPLETE, PacketFunctions::InitializeOpticalComplete}, 
+    {PacketIds::TEXT, PacketFunctions::TextPacket}};
 
 static void receive_core() {
     while (true) {
@@ -47,7 +47,7 @@ static void receive_core() {
         if (packet.has_value() && packet->is_request()) {
             auto packet_function = IDPairs.find(packet->get_id());
             if (packet_function != IDPairs.end()){
-                packet_function->second(&serial_handler);
+                packet_function->second(serial_handler);
             }
         }
     }
@@ -57,7 +57,7 @@ int main() {
     stdio_init_all();
     hello_world();
 
-    mutex_init(&packetFunctions::measurementMut);
+    mutex_init(&PacketFunctions::measurement_mut);
     // Init optical sensor in separate scope for no reason
     bool success = true;
     success &= odom_sensor.calibrate();
@@ -79,9 +79,9 @@ int main() {
     multicore_launch_core1(receive_core);
 
     while (true) {
-        mutex_enter_blocking(&packetFunctions::measurementMut);
-        packetFunctions::measurement = odom_sensor.get_position();
-        mutex_exit(&packetFunctions::measurementMut);
+        mutex_enter_blocking(&PacketFunctions::measurement_mut);
+        PacketFunctions::measurement = odom_sensor.get_position();
+        mutex_exit(&PacketFunctions::measurement_mut);
         sleep_ms(10);
     }
 }
