@@ -2,7 +2,10 @@
 #include <iostream>
 #include <thread>
 #include <cstdio>
+#include <functional>
+#include <unordered_map>
 
+#include "pico/mutex.h"
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
 
@@ -10,7 +13,12 @@
 #include "SerialHandler.hpp"
 #include "comms/PiPicoComm.hpp"
 #include "devices/PAA5160E1.hpp"
+#include "packets/InitializeAuxPacket.hpp"
+#include "packets/InitializeOpticalCompletePacket.hpp"
+#include "packets/InitializeOpticalPacket.hpp"
 #include "packets/OpticalPacket.hpp"
+#include "packets/TextPacket.hpp"
+#include "PacketFunctions.hpp"
 
 static void hello_world() {
     std::cout << "Program Started" << std::endl;
@@ -26,15 +34,21 @@ const I2C i2c_instance(Config::OPTICAL_SENSOR::ADDR, Config::OPTICAL_SENSOR::BAU
                            {Config::Pins::OPTICAL_SDA_GPIO, Config::Pins::OPTICAL_SCL_GPIO});
 static PAA5160E1 odom_sensor(i2c_instance);
 
-PAA5160E1::SensorData measurement{};
+std::unordered_map<uint8_t, std::function<void(SerialHandler&)>> IDPairs = {
+    {PacketIds::INITIALIZE_AUX, PacketFunctions::IntitializeAux}, 
+    {PacketIds::OPTICAL, PacketFunctions::Optical}, 
+    {PacketIds::INITIALIZE_OPTICAL, PacketFunctions::InitializeOptical}, 
+    {PacketIds::INITIALIZE_OPTICAL_COMPLETE, PacketFunctions::InitializeOpticalComplete}, 
+    {PacketIds::TEXT, PacketFunctions::TextPacket}};
 
 static void receive_core() {
     while (true) {
         const auto& packet = serial_handler.receive_packet();
-        if (packet.has_value() && packet->is_request() && packet->get_id() == OpticalPacket::id) {
-
-            printf("Responding with X: %.2f | Y: %.2f | H: %.2f\n", measurement.x, measurement.y, measurement.h);
-            serial_handler.send(OpticalPacket{measurement.x, measurement.y, measurement.h});
+        if (packet.has_value() && packet->is_request()) {
+            auto packet_function = IDPairs.find(packet->get_id());
+            if (packet_function != IDPairs.end()){
+                packet_function->second(serial_handler);
+            }
         }
     }
 }
@@ -43,6 +57,7 @@ int main() {
     stdio_init_all();
     hello_world();
 
+    mutex_init(&PacketFunctions::measurement_mut);
     // Init optical sensor in separate scope for no reason
     bool success = true;
     success &= odom_sensor.calibrate();
@@ -64,8 +79,9 @@ int main() {
     multicore_launch_core1(receive_core);
 
     while (true) {
-
-        measurement = odom_sensor.get_position();
+        mutex_enter_blocking(&PacketFunctions::measurement_mut);
+        PacketFunctions::measurement = odom_sensor.get_position();
+        mutex_exit(&PacketFunctions::measurement_mut);
         sleep_ms(10);
     }
 }
